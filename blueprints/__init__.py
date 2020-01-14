@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_claims
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -18,6 +19,7 @@ app.config['APP_DEBUG']=True
 
 app.config['JWT_SECRET_KEY'] = 'JWjs924bG9epW02LsqwZaM309QL1tW31'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
+CORS(app)
 
 jwt = JWTManager(app)
 
@@ -58,16 +60,34 @@ manager.add_command('db', MigrateCommand)
 # ======================================
 
 from blueprints.register import bp_register
-app.register_blueprint(bp_register,url_prefix = '/register')
+app.register_blueprint(bp_register, url_prefix = '/register')
 
 from blueprints.login import bp_login
-app.register_blueprint(bp_login,url_prefix = '')
+app.register_blueprint(bp_login, url_prefix = '')
 
 from blueprints.password import bp_password
-app.register_blueprint(bp_password,url_prefix = '/password')
+app.register_blueprint(bp_password, url_prefix = '/password')
 
 from blueprints.profil import bp_profil
-app.register_blueprint(bp_profil,url_prefix = '/profil')
+app.register_blueprint(bp_profil, url_prefix = '/profil')
+
+from blueprints.toko import bp_profiltoko
+app.register_blueprint(bp_profiltoko, url_prefix = '/profiltoko')
+
+from blueprints.produkseller import bp_produkseller
+app.register_blueprint(bp_produkseller, url_prefix = '/produkseller')
+
+from blueprints.produk import bp_produk
+app.register_blueprint(bp_produk, url_prefix = '/produk')
+
+from blueprints.keranjang import bp_keranjang
+app.register_blueprint(bp_keranjang, url_prefix = '/keranjang')
+
+from blueprints.wishlist import bp_wishlist
+app.register_blueprint(bp_wishlist, url_prefix = '/wishlist')
+
+from blueprints.checkout import bp_checkout
+app.register_blueprint(bp_checkout, url_prefix = '/checkout')
 
 db.create_all()
 

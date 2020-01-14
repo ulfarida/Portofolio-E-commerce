@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_restful import Resource, Api, reqparse, marshal
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt_claims
 from blueprints.user.model import Users, UserDetails
@@ -55,6 +55,9 @@ class ProfilResources(Resource):
         profil = marshal(userData, UserDetails.response_fields)
 
         return profil, 200
+
+    def options(self):
+        return {}, 200
 
 
         

@@ -66,5 +66,8 @@ class PasswordResources(Resource):
             return {'message' : 'ubah password berhasil'}, 200
         else:       
             return {'message' : 'password salah'}, 404
+
+    def options(self, id=None):
+        return {'status':'ok'},200
         
 api.add_resource(PasswordResources,'')

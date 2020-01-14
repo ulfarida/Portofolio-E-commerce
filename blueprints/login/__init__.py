@@ -12,8 +12,8 @@ class CreateTokenResource(Resource):
     # login and get token
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('username', location = 'json', required = True)
-        parser.add_argument('password', location = 'json', required = True)
+        parser.add_argument('username', location = 'args', required = True)
+        parser.add_argument('password', location = 'args', required = True)
 
         args = parser.parse_args()
         
@@ -27,6 +27,9 @@ class CreateTokenResource(Resource):
             return {'token' : token}, 200
         return{'status' : 'UNAUTHORIZED' , 'message' : 'username atau password salah'}, 401
 
+    def options(self, id=None):
+        return {'status':'ok'},200
+
 class RefressTokenResources(Resource):
 
     # refresh token
@@ -35,6 +38,9 @@ class RefressTokenResources(Resource):
         current_user = get_jwt_identity()
         token = create_access_token(identity = current_user)
         return {'token' : token}, 200
+
+    def options(self, id=None):
+        return {'status':'ok'},200
         
 api.add_resource(CreateTokenResource,'/login')
 api.add_resource(RefressTokenResources,'/refresh')

@@ -6,6 +6,7 @@ import json, datetime, hashlib
 from . import *
 from blueprints import db, app
 from blueprints.user.model import Users, UserDetails
+from blueprints.keranjang.model import Keranjang
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 from password_strength import PasswordPolicy
 
@@ -56,7 +57,15 @@ class RegisterResource(Resource):
             db.session.add(profil)
             db.session.commit()
             app.logger.debug('DEBUG : %s', profil)
-            
+
+            keranjang = Keranjang(user_id = userData.id, total_harga = 0)
+            db.session.add(keranjang)
+            db.session.commit()
+            app.logger.debug('DEBUG : %s', keranjang)
+
             return {'message' : "registrasi berhasil, silakan login untuk proses selanjutnya"},200,{'Content-Type': 'application/json'}
 
+    def options(self, id=None):
+        return {'status':'ok'},200
+        
 api.add_resource(RegisterResource,'')
