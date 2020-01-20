@@ -19,7 +19,8 @@ class Users(db.Model):
     jwt_claims_fields = {
         'id' : fields.Integer,
         'username' : fields.String,
-        'email' : fields.String
+        'email' : fields.String,
+        # 'isadmin' : fields.Boolean
     }
 
     def __init__(self, username, email, password):

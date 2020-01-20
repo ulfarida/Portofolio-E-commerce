@@ -44,7 +44,7 @@ class KeranjangResources(Resource):
                         db.session.commit()
                         return {'message' : "produk berhasil ditambahkan ke keranjang!"}, 200
 
-                produk = KeranjangDetails(keranjangData.id, args['produk_id'], produkData.penjual_id, args['kuantitas'], harga)
+                produk = KeranjangDetails(keranjangData.id, args['produk_id'], args['kuantitas'], harga)
                 db.session.add(produk)
                 db.session.commit()
                 app.logger.debug('DEBUG : %s', produk)
@@ -74,7 +74,7 @@ class KeranjangResources(Resource):
             produks = []
             for produk in qry_keranjang_details:
                 marshal_produk = marshal(produk, KeranjangDetails.response_fields)
-                # marshal_produk['produk'] = marshal(Produk.query.get(marshal_produk['produk_id']), Produk.response_fields)
+                marshal_produk['produk'] = marshal(Produk.query.get(marshal_produk['produk_id']), Produk.response_fields)
                 produks.append(marshal_produk)
 
         keranjangInfo = marshal(keranjangData, Keranjang.response_fields)

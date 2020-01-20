@@ -4,32 +4,33 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
 import json, datetime, hashlib
 from . import *
-from blueprints import db, app
+from blueprints import db, app, admin_required
 from blueprints.produkseller.model import Produk
-from blueprints.toko.model import Penjual
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 
-bp_produkseller = Blueprint('produkseller',__name__)
-api = Api(bp_produkseller)
+bp_admin = Blueprint('produkseller',__name__)
+api = Api(bp_admin)
 
-class ProdukSellerResources(Resource):
+class AdminResources(Resource):
+
+    def options(self, *args, **kwargs):
+        return {'status':'ok'},200
 
     # tambah produk
     @jwt_required
+    @admin_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('nama_produk', location = 'json', required = True)
+        parser.add_argument('foto_produk', location = 'json', required = True)
         parser.add_argument('kategori', location = 'json', required = True)
         parser.add_argument('harga', location = 'json', required = True)
         parser.add_argument('stok', location = 'json', required = True)
         parser.add_argument('deskripsi', location = 'json', required = False)
+        parser.add_argument('lokasi', location = 'json', required = False)
         args = parser.parse_args()
-
-        claims = get_jwt_claims()
-        qry = Penjual.query.filter_by(user_id = claims['id'])
-        userData = qry.first()
         
-        produk = Produk(userData.id, args['nama_produk'], args['kategori'], args['harga'], args['stok'], args['deskripsi'], userData.lokasi)
+        produk = Produk(args['nama_produk'], args['foto_produk'], args['kategori'], args['harga'], args['stok'], args['deskripsi'], args['lokasi'])
         db.session.add(produk)
         db.session.commit()
 
@@ -37,41 +38,14 @@ class ProdukSellerResources(Resource):
 
         return {'message' : "produk berhasil ditambahkan!"},200
 
-    # lihat seluruh produk
-    @jwt_required
-    def get(self):   
-        parser = reqparse.RequestParser()
-        parser.add_argument('p', type=int, location='args', default=1)
-        parser.add_argument('rp', type=int, location='args', default=25)
-        args = parser.parse_args()
-
-        offset = (args['p']*args['rp']) - args['rp']
-
-        claims = get_jwt_claims()
-        qry_toko = Penjual.query.filter_by(user_id = claims['id'])
-        userData = qry_toko.first()
-
-        if userData is not None:
-            qry_produk = Produk.query.filter_by(penjual_id = userData.id).filter_by(deleted = False)
-
-            produks = []
-            for produk in qry_produk.limit(args['rp']).offset(offset).all():
-                allProduk = marshal(produk, Produk.response_fields)
-                produks.append(allProduk)
-
-            return produks, 200
-
-    def options(self):
-        return {}, 200
-
-
-class ProdukSellerbyIdResources(Resource):
 
     #edit produk
     @jwt_required
+    @admin_required
     def put(self, id):
         parser = reqparse.RequestParser()
         parser.add_argument('nama_produk', location = 'json', required = False)
+        parser.add_argument('foto_produk', location = 'json', required = False)
         parser.add_argument('kategori', location = 'json', required = False)
         parser.add_argument('harga', location = 'json', required = False)
         parser.add_argument('stok', location = 'json', required = False)
@@ -79,17 +53,15 @@ class ProdukSellerbyIdResources(Resource):
         parser.add_argument('lokasi', location = 'json', required = False)
         args = parser.parse_args()
 
-        claims = get_jwt_claims()
 
-        qry_toko = Penjual.query.filter_by(user_id = claims['id'])
-        userData = qry_toko.first()
-
-        qry = Produk.query.filter_by(penjual_id = userData.id).filter_by(id = id).filter_by(deleted= False)
+        qry = Produk.query.filter_by(id = id).filter_by(deleted= False)
         produkItem = qry.first()
 
         if produkItem is not None:
             if args['nama_produk'] is not None:
                 produkItem.nama_produk = args['nama_produk']
+            if args['foto_produk'] is not None:
+                produkItem.foto_produk = args['foto_produk']
             if args['kategori'] is not None:
                 produkItem.kategori = args['kategori']
             if args['harga'] is not None:
@@ -109,13 +81,10 @@ class ProdukSellerbyIdResources(Resource):
 
     # hapus produk
     @jwt_required
+    @admin_required
     def delete(self, id):        
-        claims = get_jwt_claims()
 
-        qry_toko = Penjual.query.filter_by(user_id = claims['id'])
-        userData = qry_toko.first()
-
-        qry = Produk.query.filter_by(penjual_id = userData.id).filter_by(id = id).filter_by(deleted=False)
+        qry = Produk.query.filter_by(id = id).filter_by(deleted=False)
         produkItem = qry.first()
 
         if produkItem is not None:
@@ -125,24 +94,5 @@ class ProdukSellerbyIdResources(Resource):
         else:
             return {'message' : 'produk tidak ditemukan'}, 404
 
-    # lihat produk by id
-    @jwt_required
-    def get(self, id):        
-        claims = get_jwt_claims()
 
-        qry_toko = Penjual.query.filter_by(user_id = claims['id'])
-        userData = qry_toko.first()
-
-        qry = Produk.query.filter_by(penjual_id = userData.id).filter_by(id = id).filter_by(deleted=False)
-        produkItem = qry.first()
-
-        if produkItem is not None:
-            return marshal(produkItem, Produk.response_fields), 200
-        else:
-            return {'message' : 'produk tidak ditemukan'}, 404
-
-    def options(self):
-        return {}, 200
-
-api.add_resource(ProdukSellerResources,'')
-api.add_resource(ProdukSellerbyIdResources, '/<int:id>')
+api.add_resource(AdminResources,'', '/<int:id>')

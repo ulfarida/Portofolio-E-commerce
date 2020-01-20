@@ -23,16 +23,16 @@ CORS(app)
 
 jwt = JWTManager(app)
 
-# def admin_required(fn):
-#     @wraps(fn)
-#     def wrapper(*args, **kwargs):
-#         verify_jwt_in_request()
-#         claims = get_jwt_claims()
-#         if claims['isinternal'] == False:
-#             return {'status': 'FORBIDDEN', 'message' : 'Internal Only!'}, 403
-#         else:
-#             return fn(*args, **kwargs)
-#     return wrapper
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        if claims['isadmin'] == False:
+            return {'status': 'FORBIDDEN', 'message' : 'Internal Only!'}, 403
+        else:
+            return fn(*args, **kwargs)
+    return wrapper
 
 # =========================================
 # ================DATABASE=================
@@ -71,11 +71,8 @@ app.register_blueprint(bp_password, url_prefix = '/password')
 from blueprints.profil import bp_profil
 app.register_blueprint(bp_profil, url_prefix = '/profil')
 
-from blueprints.toko import bp_profiltoko
-app.register_blueprint(bp_profiltoko, url_prefix = '/profiltoko')
-
-from blueprints.produkseller import bp_produkseller
-app.register_blueprint(bp_produkseller, url_prefix = '/produkseller')
+from blueprints.produkseller import bp_admin
+app.register_blueprint(bp_admin, url_prefix = '/admin')
 
 from blueprints.produk import bp_produk
 app.register_blueprint(bp_produk, url_prefix = '/produk')
@@ -88,6 +85,9 @@ app.register_blueprint(bp_wishlist, url_prefix = '/wishlist')
 
 from blueprints.checkout import bp_checkout
 app.register_blueprint(bp_checkout, url_prefix = '/checkout')
+
+from blueprints.transaksi import bp_transaksi
+app.register_blueprint(bp_transaksi, url_prefix = '/transaksi')
 
 db.create_all()
 

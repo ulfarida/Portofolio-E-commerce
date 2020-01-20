@@ -6,7 +6,6 @@ class Transaksi(db.Model):
     __tablename__ = "Transaksi"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     user_id = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable = False)
-    penjual_id = db.Column(db.Integer, db.ForeignKey("Penjual.id"), nullable = False)
     nama_penerima = db.Column(db.String(255), nullable = False)
     no_hp_penerima = db.Column(db.String(20), nullable = False)
     alamat_pengiriman = db.Column(db.String(1000), nullable = False)
@@ -21,7 +20,6 @@ class Transaksi(db.Model):
     response_fields = {
         'id' : fields.Integer,
         'user_id' : fields.Integer,
-        'penjual_id' : fields.Integer,
         'nama_penerima' : fields.String,
         'no_hp_penerima' : fields.String,
         'alamat_pengiriman' : fields.String,
@@ -34,9 +32,8 @@ class Transaksi(db.Model):
         'status' : fields.String
     }
 
-    def __init__(self, user_id, penjual_id, nama_penerima, no_hp_penerima, alamat_pengiriman, metode_pembayaran, jasa_kirim, harga, ongkos_kirim, diskon, total_harga):
+    def __init__(self, user_id, nama_penerima, no_hp_penerima, alamat_pengiriman, metode_pembayaran, jasa_kirim, harga, ongkos_kirim, diskon, total_harga):
         self.user_id = user_id
-        self.penjual_id = penjual_id
         self.nama_penerima = nama_penerima
         self.no_hp_penerima = no_hp_penerima
         self.alamat_pengiriman = alamat_pengiriman

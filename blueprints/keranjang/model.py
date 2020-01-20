@@ -26,24 +26,21 @@ class KeranjangDetails(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     keranjang_id = db.Column(db.Integer, db.ForeignKey("Keranjang.id"), nullable = False)
     produk_id = db.Column(db.Integer, db.ForeignKey("Produk.id"), nullable = False)
-    penjual_id = db.Column(db.Integer, nullable = False)
     kuantitas = db.Column(db.Integer, nullable = False, default=1)
     harga = db.Column(db.Integer, nullable = False)
     deleted = db.Column(db.Boolean, nullable = False, default=False)
 
     response_fields = {
         'id' : fields.Integer,
-        # 'keranjang_id' : fields.Integer,
+        'keranjang_id' : fields.Integer,
         'produk_id' : fields.Integer,
-        'penjual_id' : fields.Integer,
         'kuantitas' : fields.Integer,
         'harga' : fields.Integer
     }
 
-    def __init__(self, keranjang_id, produk_id, penjual_id, kuantitas, harga):
+    def __init__(self, keranjang_id, produk_id, kuantitas, harga):
         self.keranjang_id = keranjang_id
         self.produk_id = produk_id
-        self.penjual_id = penjual_id
         self.kuantitas = kuantitas
         self.harga = harga
 

@@ -11,7 +11,7 @@ api = Api(bp_profil)
 
 class ProfilResources(Resource):
 
-    # tambah profil 
+    # edit profil 
     @jwt_required
     def put(self):
         parser = reqparse.RequestParser()

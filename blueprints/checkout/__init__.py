@@ -40,48 +40,46 @@ class CheckoutResources(Resource):
             item = marshal(produk, KeranjangDetails.response_fields)
             produks.append(item)
 
-        #mengelompokkan produk berdasarkan penjual/toko
+        #membuat transaksi
         if produks is not None:
-            checkout = {}
+            transaksi = Transaksi(claims['id'], args['nama_penerima'], 
+                        args['no_hp_penerima'], args['alamat_pengiriman'],
+                        args['metode_pembayaran'], args['jasa_kirim'], harga=0,
+                        ongkos_kirim=0, diskon=0, total_harga=0)
+            db.session.add(transaksi)
+            db.session.commit()
+            app.logger.debug('DEBUG : %s', transaksi)
+
+            #membuat transaksi detail (list produk)
+            qry_transaksi = Transaksi.query.filter_by(user_id = claims['id']).filter_by(harga=0)
+            qry_transaksi = qry_transaksi.first()
             for produk in produks:
-                if produk['penjual_id'] not in checkout:
-                    checkout[produk['penjual_id']] = [produk]
-                else:
-                    checkout[produk['penjual_id']].append(produk)
+                qry_produk = Produk.query.get(produk['produk_id'])
+                if qry_produk.stok >= produk['kuantitas']:
+                    qry_produk.stok -= produk['kuantitas']
+                    qry_produk.jumlah_terjual += produk['kuantitas']
+                    qry_transaksi.harga += produk['harga']
+                    qry_transaksi.total_harga += produk['harga']
 
-            #membuat transaksi berdasarkan penjual/toko
-            for key, value in checkout.items():
-                transaksi = Transaksi(claims['id'], int(key), args['nama_penerima'], 
-                            args['no_hp_penerima'], args['alamat_pengiriman'],
-                            args['metode_pembayaran'], args['jasa_kirim'], harga=0,
-                            ongkos_kirim=0, diskon=0, total_harga=0)
-                db.session.add(transaksi)
-                db.session.commit()
-                app.logger.debug('DEBUG : %s', transaksi)
-
-                #membuat transaksi detail (list produk sesuai dengan penjual/toko)
-                qry_transaksi = Transaksi.query.filter_by(user_id = claims['id']).filter_by(penjual_id = int(key)).filter_by(harga=0)
-                qry_transaksi = qry_transaksi.first()
-                for produk in value:
-                    qry_produk = Produk.query.get(produk['produk_id'])
-                    if qry_produk.stok >= produk['kuantitas']:
-                        qry_produk.stok -= produk['kuantitas']
-                        qry_transaksi.harga += produk['harga']
-
-                        transaksi_detail = TransaksiDetails(qry_transaksi.id, produk['produk_id'], produk['kuantitas'], produk['harga'])
-                        db.session.add(transaksi_detail)
-                        db.session.commit()
-
-                        app.logger.debug('DEBUG : %s', transaksi_detail)
-
-                    else:
-                        return {'message' : 'kuantitas pembelian melebihi stok yang tersedia'}
-
-                #menghapus produk pada keranjang yang berhasil di checkout
-                qry_keranjang_details_2 = qry_keranjang_details.filter_by(penjual_id=int(key)).filter_by(deleted=False)
-                for qry in qry_keranjang_details_2:
-                    qry.deleted = True
+                    transaksi_detail = TransaksiDetails(qry_transaksi.id, produk['produk_id'], produk['kuantitas'], produk['harga'])
+                    db.session.add(transaksi_detail)
                     db.session.commit()
+
+                    app.logger.debug('DEBUG : %s', transaksi_detail)
+
+                else:
+                    return {'message' : 'kuantitas pembelian melebihi stok yang tersedia'}
+
+            #menghapus produk pada keranjang yang berhasil di checkout
+            qry_keranjang_details_2 = qry_keranjang_details.filter_by(deleted=False)
+            for qry in qry_keranjang_details_2:
+                qry.deleted = True
+                db.session.commit()
+                
+            keranjangData.total_harga = 0
+            
+            db.session.commit()
+
 
             return {'message' : "checkout berhasil"}, 200
 
