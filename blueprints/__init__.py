@@ -42,9 +42,9 @@ def admin_required(fn):
 try :
     env = os.environ.get('FLASK_ENV', 'development')
     if env == 'testing':
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta123@0.0.0.0/Project_API_test'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta1234@ecommerce.c6f15gex6yqq.ap-southeast-1.rds.amazonaws.com:3306/Project_API_test'
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta123@0.0.0.0/E_Commerce'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta1234@ecommerce.c6f15gex6yqq.ap-southeast-1.rds.amazonaws.com:3306/ECommerce'
 except Exception as e :
     raise e
 
