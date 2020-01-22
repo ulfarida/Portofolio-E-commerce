@@ -11,9 +11,9 @@ from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_cla
 bp_transaksi = Blueprint('transaksi',__name__)
 api = Api(bp_transaksi)
 
-class TransaksiResources(Resource):
+class TransaksiUserResources(Resource):
 
-    # tambah produk ke keranjang
+    # lihat transaksi (user)
     @jwt_required
     def get(self):
 
@@ -31,4 +31,4 @@ class TransaksiResources(Resource):
     def options(self):
         return {}, 200
 
-api.add_resource(TransaksiResources,'')
+api.add_resource(TransaksiUserResources,'')

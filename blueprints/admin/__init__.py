@@ -5,10 +5,11 @@ from sqlalchemy import desc
 import json, datetime, hashlib
 from . import *
 from blueprints import db, app, admin_required
-from blueprints.produkseller.model import Produk
+from blueprints.admin.model import Produk
+from blueprints.transaksi.model import Transaksi, TransaksiDetails
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 
-bp_admin = Blueprint('produkseller',__name__)
+bp_admin = Blueprint('admin',__name__)
 api = Api(bp_admin)
 
 class AdminResources(Resource):
@@ -94,5 +95,27 @@ class AdminResources(Resource):
         else:
             return {'message' : 'produk tidak ditemukan'}, 404
 
+class TransaksiAdminResources(Resource):
+
+    # lihat seluruh transaksi
+    @jwt_required
+    @admin_required
+    def get(self):
+
+        qry_transaksi = Transaksi.query.filter_by(user_id = claims['id'])
+
+        if qry_transaksi is not None:
+            list_transaksi = []
+            for transaksi in qry_transaksi:
+                marshal_transaksi = marshal(transaksi, Transaksi.response_fields)
+                list_transaksi.append(marshal_transaksi)
+
+            return list_transaksi, 200
+
+    def options(self):
+        return {}, 200
+
+
 
 api.add_resource(AdminResources,'', '/<int:id>')
+api.add_resource(TransaksiAdminResources,'')
