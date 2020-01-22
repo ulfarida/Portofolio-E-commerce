@@ -74,8 +74,8 @@ app.register_blueprint(bp_profil, url_prefix = '/profil')
 from blueprints.admin import bp_admin
 app.register_blueprint(bp_admin, url_prefix = '/admin')
 
-from blueprints.admin import bp_produk
-app.register_blueprint(bp_produk, url_prefix = '/produk')
+from blueprints.admin import bp_admin
+app.register_blueprint(bp_admin, url_prefix = '/produk')
 
 from blueprints.keranjang import bp_keranjang
 app.register_blueprint(bp_keranjang, url_prefix = '/keranjang')
