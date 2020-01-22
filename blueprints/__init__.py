@@ -38,7 +38,6 @@ def admin_required(fn):
 # ================DATABASE=================
 # =========================================
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@0.0.0.0:3306/Project_Restful_API'
 try :
     env = os.environ.get('FLASK_ENV', 'development')
     if env == 'testing':
