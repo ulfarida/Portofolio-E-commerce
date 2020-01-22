@@ -5,7 +5,7 @@ from sqlalchemy import desc
 import json, datetime, hashlib
 from . import *
 from blueprints import db, app
-from blueprints.produk.model import Produk
+from blueprints.admin.model import Produk
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 
 bp_produk = Blueprint('produk',__name__)
