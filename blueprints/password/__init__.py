@@ -23,9 +23,9 @@ class PasswordResources(Resource):
         args = parser.parse_args()
         
         qry = Users.query.filter_by(email = args['email'])
-        userData = qry.first()
+        data_user = qry.first()
 
-        if userData is not None:
+        if data_user is not None:
             return {'message' : 'Cek email untuk mengubah password anda'}, 200
 
         return{'message' : 'email tidak terdaftar'}, 401
@@ -44,23 +44,23 @@ class PasswordResources(Resource):
         encrypted_password = hashlib.md5(args['password_lama'].encode()).hexdigest()
 
         qry = Users.query.filter_by(username = claims['username']).filter_by(password = encrypted_password)
-        userData = qry.first()
+        data_user = qry.first()
 
-        if userData is not None:
+        if data_user is not None:
             validation = self.policy.test(args['password_baru'])
             if validation:
-                errorList = []
+                list_error = []
                 for item in validation:
                     split = str(item).split('(')
                     error, num = split[0], split[1][0]
-                    errorList.append("{err}(minimum {num})".format(err=error, num=num))
-                message = "Mohon cek password baru anda: " + ', '.join(x for x in errorList)
+                    list_error.append("{err}(minimum {num})".format(err=error, num=num))
+                message = "Mohon cek password baru anda: " + ', '.join(x for x in list_error)
                 return {'message': message}, 422, {'Content-Type': 'application/json'}
             elif args['password_baru'] != args['konfirmasi_password']:
                 return {'message': 'Konfirmasi password tidak sesuai'}, 401
 
             encrypted = hashlib.md5(args['password_baru'].encode()).hexdigest()
-            userData.password = encrypted
+            data_user.password = encrypted
             db.session.commit()
 
             return {'message' : 'ubah password berhasil'}, 200

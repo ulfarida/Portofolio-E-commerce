@@ -26,18 +26,18 @@ class ProfilResources(Resource):
         claims = get_jwt_claims()
 
         qry = UserDetails.query.filter_by(user_id = claims['id'])
-        userData = qry.first()
+        data_user = qry.first()
 
         if args['nama'] is not None:
-            userData.nama = args['nama']
+            data_user.nama = args['nama']
         if args['alamat'] is not None:
-            userData.alamat = args['alamat']
+            data_user.alamat = args['alamat']
         if args['no_hp'] is not None:
-            userData.no_hp = args['no_hp']
+            data_user.no_hp = args['no_hp']
         if args['tanggal_lahir'] is not None:
-            userData.tanggal_lahir = args['tanggal_lahir']
+            data_user.tanggal_lahir = args['tanggal_lahir']
         if args['foto_profil'] is not None:
-            userData.foto_profil = args['foto_profil']
+            data_user.foto_profil = args['foto_profil']
 
         db.session.commit()
 
@@ -50,9 +50,9 @@ class ProfilResources(Resource):
         claims = get_jwt_claims()
 
         qry = UserDetails.query.filter_by(user_id = claims['id'])
-        userData = qry.first()
+        data_user = qry.first()
 
-        profil = marshal(userData, UserDetails.response_fields)
+        profil = marshal(data_user, UserDetails.response_fields)
 
         return profil, 200
 

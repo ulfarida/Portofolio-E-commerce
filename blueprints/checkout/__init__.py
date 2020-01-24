@@ -6,7 +6,7 @@ import json, datetime, hashlib
 from . import *
 from blueprints import db, app
 from blueprints.keranjang.model import Keranjang, KeranjangDetails
-from blueprints.admin.model import Produk
+from blueprints.produk.model import Produk
 from blueprints.transaksi.model import Transaksi, TransaksiDetails
 from blueprints.transaksi.model import Transaksi
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
@@ -30,9 +30,9 @@ class CheckoutResources(Resource):
 
         claims = get_jwt_claims()
         qry_keranjang = Keranjang.query.filter_by(user_id = claims['id'])
-        keranjangData = qry_keranjang.first()
+        keranjang_data = qry_keranjang.first()
 
-        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = keranjangData.id).filter_by(deleted=False)
+        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = keranjang_data.id).filter_by(deleted=False)
 
         # list semua produk yang ingin dicheckout
         produks = []
@@ -51,7 +51,7 @@ class CheckoutResources(Resource):
             app.logger.debug('DEBUG : %s', transaksi)
 
             #membuat transaksi detail (list produk)
-            qry_transaksi = Transaksi.query.filter_by(user_id = claims['id']).filter_by(harga=0)
+            qry_transaksi = Transaksi.query.filter_by(user_id = claims['id']).filter_by(harga=0).filter_by(deleted=False)
             qry_transaksi = qry_transaksi.first()
             for produk in produks:
                 qry_produk = Produk.query.get(produk['produk_id'])
@@ -76,7 +76,7 @@ class CheckoutResources(Resource):
                 qry.deleted = True
                 db.session.commit()
                 
-            keranjangData.total_harga = 0
+            keranjang_data.total_harga = 0
             
             db.session.commit()
 

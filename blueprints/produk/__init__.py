@@ -5,7 +5,7 @@ from sqlalchemy import desc
 import json, datetime, hashlib
 from . import *
 from blueprints import db, app
-from blueprints.admin.model import Produk
+from blueprints.produk.model import Produk
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 
 bp_produk = Blueprint('produk',__name__)
@@ -26,8 +26,8 @@ class ProdukResources(Resource):
 
         produks = []
         for produk in qry_produk.limit(args['rp']).offset(offset).all():
-            allProduk = marshal(produk, Produk.response_fields)
-            produks.append(allProduk)
+            semua_produk = marshal(produk, Produk.response_fields)
+            produks.append(semua_produk)
 
         return produks, 200
 
@@ -40,10 +40,10 @@ class ProdukbyIdResources(Resource):
     def get(self, id):
 
         qry = Produk.query.filter_by(id = id).filter_by(deleted=False)
-        produkItem = qry.first()
+        item_produk = qry.first()
 
-        if produkItem is not None:
-            return marshal(produkItem, Produk.response_fields), 200
+        if item_produk is not None:
+            return marshal(item_produk, Produk.response_fields), 200
         else:
             return {'message' : 'produk tidak ditemukan'}, 404
 

@@ -41,9 +41,9 @@ def admin_required(fn):
 try :
     env = os.environ.get('FLASK_ENV', 'development')
     if env == 'testing':
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta1234@ecommerce.c6f15gex6yqq.ap-southeast-1.rds.amazonaws.com:3306/Project_API_test'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta1234@ecommerce.c6f15gex6yqq.ap-southeast-1.rds.amazonaws.com:3306/babybun_test'
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta1234@ecommerce.c6f15gex6yqq.ap-southeast-1.rds.amazonaws.com:3306/ECommerce'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:alta1234@ecommerce.c6f15gex6yqq.ap-southeast-1.rds.amazonaws.com:3306/babybun'
 except Exception as e :
     raise e
 
@@ -70,11 +70,11 @@ app.register_blueprint(bp_password, url_prefix = '/password')
 from blueprints.profil import bp_profil
 app.register_blueprint(bp_profil, url_prefix = '/profil')
 
-from blueprints.produk import bp_produk
-app.register_blueprint(bp_produk, url_prefix = '/produk')
-
 from blueprints.admin import bp_admin
 app.register_blueprint(bp_admin, url_prefix = '/admin')
+
+from blueprints.produk import bp_produk
+app.register_blueprint(bp_produk, url_prefix = '/produk')
 
 from blueprints.keranjang import bp_keranjang
 app.register_blueprint(bp_keranjang, url_prefix = '/keranjang')

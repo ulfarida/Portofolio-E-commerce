@@ -5,7 +5,7 @@ from sqlalchemy import desc
 import json, datetime, hashlib
 from . import *
 from blueprints import db, app
-from blueprints.admin.model import Produk
+from blueprints.produk.model import Produk
 from blueprints.wishlist.model import Wishlist
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 
@@ -24,9 +24,9 @@ class WishlistResources(Resource):
         claims = get_jwt_claims()
 
         qry_produk = Produk.query.filter_by(id = args['produk_id']).filter_by(deleted=False)
-        produkData = qry_produk.first()
+        data_produk = qry_produk.first()
 
-        if produkData is not None:        
+        if data_produk is not None:        
             qry_wishlist = Wishlist.query.filter_by(user_id = claims['id']).filter_by(deleted=False)
 
             for item in qry_wishlist:
@@ -43,7 +43,7 @@ class WishlistResources(Resource):
             return {'message' : "produk tidak ditemukan"},200
 
 
-    # lihat seluruh produk di keranjang
+    # lihat seluruh produk di wishlist
     @jwt_required
     def get(self):   
         parser = reqparse.RequestParser()
@@ -75,16 +75,16 @@ class WishlistResources(Resource):
         claims = get_jwt_claims()
 
         qry_wishlist = Wishlist.query.filter_by(user_id = claims['id']).filter_by(deleted=False).filter_by(id=id)
-        produkItem = qry_wishlist.first()
+        item_produk = qry_wishlist.first()
 
-        if produkItem is not None:
-            produkItem.deleted = True
+        if item_produk is not None:
+            item_produk.deleted = True
             db.session.commit()
             return {'message' : 'produk telah terhapus dari wishlist'}, 200
         else:
             return {'message' : 'produk tidak ditemukan'}, 404
 
-    def options(self):
+    def options(self, id=None):
         return {}, 200
 
 api.add_resource(WishlistResources,'', '/<int:id>')

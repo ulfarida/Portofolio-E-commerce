@@ -27,21 +27,23 @@ class RegisterResource(Resource):
         parser.add_argument('password', location = 'json', required = True)
         parser.add_argument('confirm_password', location = 'json', required = True)
         args = parser.parse_args()
+
         
         if args['password'] != args['confirm_password']:
             return {'message': 'Konfirmasi password tidak sesuai'}, 401
         else:
             validation = self.policy.test(args['password'])
             if validation:
-                errorList = []
+                list_error = []
                 for item in validation:
                     split = str(item).split('(')
                     error, num = split[0], split[1][0]
-                    errorList.append("{err}(minimum {num})".format(err=error, num=num))
-                message = "Please check your password: " + ', '.join(x for x in errorList)
+                    list_error.append("{err}(minimum {num})".format(err=error, num=num))
+                message = "Please check your password: " + ', '.join(x for x in list_error)
                 return {'message': message}, 422, {'Content-Type': 'application/json'}
             encrypted = hashlib.md5(args['password'].encode()).hexdigest()
 
+        # print('username', args['username'])
             user = Users(args['username'], args['email'], encrypted)
             db.session.add(user)
             try:
@@ -51,14 +53,14 @@ class RegisterResource(Resource):
             app.logger.debug('DEBUG : %s', user)
 
             qry = Users.query.filter_by(username = args['username'])
-            userData = qry.first()
+            data_user = qry.first()
 
-            profil = UserDetails(userData.id, None, None, None, args['email'], None, None)
+            profil = UserDetails(data_user.id, None, None, None, args['email'], None, None)
             db.session.add(profil)
             db.session.commit()
             app.logger.debug('DEBUG : %s', profil)
 
-            keranjang = Keranjang(user_id = userData.id, total_harga = 0)
+            keranjang = Keranjang(user_id = data_user.id, total_harga = 0)
             db.session.add(keranjang)
             db.session.commit()
             app.logger.debug('DEBUG : %s', keranjang)

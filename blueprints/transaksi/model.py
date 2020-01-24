@@ -16,6 +16,7 @@ class Transaksi(db.Model):
     diskon = db.Column(db.Integer, nullable = False)
     total_harga = db.Column(db.Integer, nullable = False)
     status = db.Column(db.String(255), nullable = False, default='belum dibayar')
+    deleted = db.Column(db.Boolean, nullable = False, default=False)
 
     response_fields = {
         'id' : fields.Integer,
@@ -29,7 +30,8 @@ class Transaksi(db.Model):
         'ongkos_kirim' : fields.Integer,
         'diskon' : fields.Integer,
         'total_harga' : fields.Integer,
-        'status' : fields.String
+        'status' : fields.String,
+        'deleted' : fields.Boolean
     }
 
     def __init__(self, user_id, nama_penerima, no_hp_penerima, alamat_pengiriman, metode_pembayaran, jasa_kirim, harga, ongkos_kirim, diskon, total_harga):

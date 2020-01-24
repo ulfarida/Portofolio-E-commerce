@@ -6,7 +6,7 @@ import json, datetime, hashlib
 from . import *
 from blueprints import db, app
 from blueprints.keranjang.model import Keranjang, KeranjangDetails
-from blueprints.admin.model import Produk
+from blueprints.produk.model import Produk
 from flask_jwt_extended  import jwt_required, verify_jwt_in_request, get_jwt_claims
 
 bp_keranjang = Blueprint('keranjang',__name__)
@@ -24,19 +24,19 @@ class KeranjangResources(Resource):
 
         claims = get_jwt_claims()
         qry = Keranjang.query.filter_by(user_id = claims['id'])
-        keranjangData = qry.first()
+        data_keranjang = qry.first()
 
         qry_produk = Produk.query.filter_by(id = args['produk_id']).filter_by(deleted=False)
-        produkData = qry_produk.first()
+        data_produk = qry_produk.first()
 
-        if produkData is not None:
-            if int(args['kuantitas']) > produkData.stok :
+        if data_produk is not None:
+            if int(args['kuantitas']) > data_produk.stok :
                 return {'message' : "kuantitas melebihi stok yang tersedia"}, 401
             else:
-                harga = produkData.harga * int(args['kuantitas'])
-                keranjangData.total_harga += harga
+                harga = data_produk.harga * int(args['kuantitas'])
+                data_keranjang.total_harga += harga
                 
-                qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = keranjangData.id).filter_by(deleted=False)
+                qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = data_keranjang.id).filter_by(deleted=False)
                 for item in qry_keranjang_details:
                     if int(args['produk_id']) == item.produk_id:
                         item.kuantitas += int(args['kuantitas'])
@@ -44,7 +44,7 @@ class KeranjangResources(Resource):
                         db.session.commit()
                         return {'message' : "produk berhasil ditambahkan ke keranjang!"}, 200
 
-                produk = KeranjangDetails(keranjangData.id, args['produk_id'], args['kuantitas'], harga)
+                produk = KeranjangDetails(data_keranjang.id, args['produk_id'], args['kuantitas'], harga)
                 db.session.add(produk)
                 db.session.commit()
                 app.logger.debug('DEBUG : %s', produk)
@@ -66,9 +66,9 @@ class KeranjangResources(Resource):
         claims = get_jwt_claims()
 
         qry_keranjang = Keranjang.query.filter_by(user_id = claims['id'])
-        keranjangData = qry_keranjang.first()
+        data_keranjang = qry_keranjang.first()
 
-        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = keranjangData.id).filter_by(deleted=False)
+        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = data_keranjang.id).filter_by(deleted=False)
 
         if qry_keranjang_details is not None:
             produks = []
@@ -77,9 +77,9 @@ class KeranjangResources(Resource):
                 marshal_produk['produk'] = marshal(Produk.query.get(marshal_produk['produk_id']), Produk.response_fields)
                 produks.append(marshal_produk)
 
-        keranjangInfo = marshal(keranjangData, Keranjang.response_fields)
-        keranjangInfo['produk'] = produks
-        return keranjangInfo, 200
+        keranjang_info = marshal(data_keranjang, Keranjang.response_fields)
+        keranjang_info['produk'] = produks
+        return keranjang_info, 200
 
     def options(self):
         return {}, 200
@@ -92,39 +92,46 @@ class KeranjangbyIdResources(Resource):
         claims = get_jwt_claims()
 
         qry_keranjang = Keranjang.query.filter_by(user_id = claims['id'])
-        keranjangData = qry_keranjang.first()
+        data_keranjang = qry_keranjang.first()
 
-        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = keranjangData.id).filter_by(deleted=False).filter_by(id = id)
-        produkItem = qry_keranjang_details.first()
+        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = data_keranjang.id).filter_by(deleted=False).filter_by(id = id)
+        item_produk = qry_keranjang_details.first()
 
-        if produkItem is not None:
-            produkItem.deleted = True
-            keranjangData.total_harga -= produkItem.harga
+        if item_produk is not None:
+            item_produk.deleted = True
+            data_keranjang.total_harga -= item_produk.harga
             db.session.commit()
             return {'message' : 'produk telah terhapus dari keranjang'}, 200
         else:
             return {'message' : 'produk tidak ditemukan'}, 404
 
-    # lihat produk by id
+    #edit kuantitas keranjang details
     @jwt_required
-    def get(self, id):        
-        claims = get_jwt_claims()
+    def put(self, id):
+        parser = reqparse.RequestParser()
+        parser.add_argument('kuantitas', location = 'json', required = False)
+        args = parser.parse_args()
 
-        qry_keranjang = Keranjang.query.filter_by(user_id = claims['id'])
-        keranjangData = qry_keranjang.first()
 
-        qry_keranjang_details = KeranjangDetails.query.filter_by(keranjang_id = keranjangData.id).filter_by(deleted=False).filter_by(id = id)
-        produkItem = qry_keranjang_details.first()
+        qry_keranjang_details = KeranjangDetails.query.get(id)
 
-        if produkItem is not None:
-            produk = marshal(produkItem, KeranjangDetails.response_fields)
-            # detail_produk = marshal(Produk.query.get(produk['produk_id']), Produk.response_fields)
-            # produk['produk'] = detail_produk
-            return produk, 200
+        if qry_keranjang_details is not None:
+            qry_produk = Produk.query.filter_by(id = qry_keranjang_details.produk_id).filter_by(deleted=False)
+            data_produk = qry_produk.first()
+            if args['kuantitas'] is not None:
+                qry_keranjang_details.kuantitas = args['kuantitas']
+                harga_awal = qry_keranjang_details.harga
+                harga_akhir = data_produk.harga * int(args['kuantitas'])
+                qry_keranjang_details.harga = harga_akhir
+                Keranjang.query.get(qry_keranjang_details.keranjang_id).total_harga += (harga_akhir - harga_awal)
+
+            db.session.commit()
+            return {'message' : 'edit keranjang berhasil'}, 200
+
         else:
-            return {'message' : 'produk tidak ditemukan'}, 404
+            return {'message' : 'keranjang tidak ditemukan'}, 404
 
-    def options(self):
+    def options(self, id=None):
         return {}, 200
 
 api.add_resource(KeranjangResources,'')

@@ -10,8 +10,8 @@ class Wishlist(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, default=False)
 
     response_fields = {
-        # 'id' : fields.Integer,
-        # 'user_id' : fields.Integer,
+        'id' : fields.Integer,
+        'user_id' : fields.Integer,
         'produk_id' : fields.Integer
     }
 

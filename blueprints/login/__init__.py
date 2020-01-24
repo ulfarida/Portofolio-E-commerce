@@ -22,13 +22,13 @@ class CreateTokenResource(Resource):
             return {'token' : token, 'isadmin' : True}, 200
         
         encrypted = hashlib.md5(args['password'].encode()).hexdigest()
-        qry = Users.query.filter_by(username = args['username']).filter_by(password = encrypted)
-        userData = qry.first()
+        qry = Users.query.filter_by(username = args['username']).filter_by(password = encrypted).filter_by(deleted = False)
+        data_user = qry.first()
 
-        if userData is not None:
-            userData = marshal(userData,Users.jwt_claims_fields)
-            userData['isadmin'] = False
-            token = create_access_token(identity = userData['username'], user_claims = userData)
+        if data_user is not None:
+            data_user = marshal(data_user,Users.jwt_claims_fields)
+            data_user['isadmin'] = False
+            token = create_access_token(identity = data_user['username'], user_claims = data_user)
             return {'token' : token, 'isadmin' : False}, 200
         return{'status' : 'UNAUTHORIZED' , 'message' : 'username atau password salah'}, 401
 
